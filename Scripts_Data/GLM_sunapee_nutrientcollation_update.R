@@ -253,12 +253,13 @@ LMP_do$datasource <- 'LMP DO'
 #### woody lake data - from trophic reports ####
 woody <- read_xlsx(paste0(LSPA.data.dir, 'raw data/from LSPA/Woody data.xlsx'))
 woody <- woody %>% 
-  rename(station = site)
+  rename(station = site,
+         depth_m = depth.m)
 woody$date <- as.Date(woody$date, format='%Y-%m-%d')
 
 ## chla ##
 chla_woody <- subset(woody, subset=(parameter=='chla'))
-chla_woody$depth.m = 0.1
+chla_woody$depth_m = 0.1
 chla_woody$depth.measurement <- 'assumed'
 chla_woody$parameter <- 'chla_ugL'
 chla_woody <- chla_woody %>% 
@@ -277,13 +278,13 @@ ggplot(chla, aes(x = date, y = value, color = flag)) +
   geom_point() +
   facet_grid(station ~ .)
 
-# write_csv(chla, paste0(dump.dir.calibration, 'chlorophylla_1986-2019_v28Sept2020.csv'))
+write_csv(chla, paste0(dump.dir.calibration, 'chlorophylla_1986-2019_v28Sept2020.csv'))
 
 ## secchi ##
 secchi_woody <- subset(woody, subset=(parameter=='secchi'))
 secchi_woody$parameter <- 'secchidepth_m'
 secchi_woody <- secchi_woody %>% 
-  select(-depth.m, -layer, -unit) %>% 
+  select(-depth_m, -layer, -unit) %>% 
   mutate(datasource = 'trophic reports (Woody)')
 str(secchi_woody)
 str(LMP_SD)
@@ -298,7 +299,7 @@ ggplot(secchi, aes(x = date, y = value, color = flag)) +
   geom_point() +
   facet_grid(station ~ .)
 
-# write_csv(secchi, paste0(dump.dir.calibration, 'secchi_1986-2019_v28Sept2020.csv'))
+write_csv(secchi, paste0(dump.dir.calibration, 'secchi_1986-2019_v28Sept2020.csv'))
 
 ## do temp ##
 dotemp_woody <- woody %>% 
@@ -312,7 +313,6 @@ dotemp_woody <- dotemp_woody %>%
                                parameter == 'temp' ~ 'temp_C',
                                TRUE ~ parameter)) %>% 
   select(-unit, - layer) %>% 
-  rename(depth_m = depth.m) %>% 
   mutate(datasource = 'trophic reports (Woody)')
 dotemp_woody <- merge(dotemp_woody, site_descrip, by.x = 'station', by.y = 'site') %>% 
   select(-maxdepth)
@@ -348,7 +348,6 @@ chem_woody <- woody %>%
                                TRUE ~ parameter),
          depth.measurement = 'actual') %>% 
   select(-unit) %>% 
-  rename(depth_m = depth.m) %>% 
   mutate(datasource = 'trophic reports (Woody)')
 chem_woody <- merge(chem_woody, site_descrip, by.x = 'station', by.y = 'site') %>% 
   select(-maxdepth)
@@ -357,7 +356,5 @@ str(chem_woody)
 str(LMP_chem_m)
 
 
-chem <- full_join(chem_woody, LMP_chem_m)
-
-# write_csv(chem, paste0(dump.dir.calibration, 'lake_chem_1986-2019_v29Sept2020.csv'))
+write_csv(chem, paste0(dump.dir.calibration, 'lake_chem_1986-2019_v29Sept2020.csv'))
 
