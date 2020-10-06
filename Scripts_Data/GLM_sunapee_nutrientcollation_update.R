@@ -11,6 +11,7 @@
 #* LAST MODIFIED: 21Sept2020                                     *
 #* BY:      B. Steele                                            *
 #* NOTES:   v 21Sept2020 - update data collation through 2019    *
+#*          v 05OCt2020 - update with data from KLC              *
 #*****************************************************************
 
 library(tidyverse) #v 1.3.0
@@ -23,7 +24,7 @@ dump.dir.calibration = 'C:/Users/steeleb/Dropbox/Lake Sunapee/misc/GLM/Final Dat
 LSPA.data.dir <- 'C:/Users/steeleb/Dropbox/Lake Sunapee/long term Sunapee data/'
 CCC.data.dir <- "C:/Users/steeleb/Dropbox/Lake Sunapee/Sunapee tribs/data from Cayelan/"
 SAS.data.dir = "C:/Users/steeleb/Dropbox/Lake Sunapee/Sunapee tribs/sasdatalibr/"
-
+KLC.data.dir = 'C:/Users/steeleb/Dropbox/Lake Sunapee/monitoring/TN data from KLC/'
 
 #####**** STREAM INFLOW WATER QUALITY ****####
 # salt: mg/L (average daily streamflow salinity)
@@ -278,7 +279,7 @@ ggplot(chla, aes(x = date, y = value, color = flag)) +
   geom_point() +
   facet_grid(station ~ .)
 
-write_csv(chla, paste0(dump.dir.calibration, 'chlorophylla_1986-2019_v28Sept2020.csv'))
+# write_csv(chla, paste0(dump.dir.calibration, 'chlorophylla_1986-2019_v28Sept2020.csv'))
 
 ## secchi ##
 secchi_woody <- subset(woody, subset=(parameter=='secchi'))
@@ -299,7 +300,7 @@ ggplot(secchi, aes(x = date, y = value, color = flag)) +
   geom_point() +
   facet_grid(station ~ .)
 
-write_csv(secchi, paste0(dump.dir.calibration, 'secchi_1986-2019_v28Sept2020.csv'))
+# write_csv(secchi, paste0(dump.dir.calibration, 'secchi_1986-2019_v28Sept2020.csv'))
 
 ## do temp ##
 dotemp_woody <- woody %>% 
@@ -355,6 +356,70 @@ chem_woody <- merge(chem_woody, site_descrip, by.x = 'station', by.y = 'site') %
 str(chem_woody)
 str(LMP_chem_m)
 
+chem <- full_join(LMP_chem_m, chem_woody)
 
-write_csv(chem, paste0(dump.dir.calibration, 'lake_chem_1986-2019_v29Sept2020.csv'))
+#### TN data from KLC ####
+# these data compiled by Kathryn Cottingham. Data from a Gloeo study funded by NSF to HAE, KLC and KCW. See EDI 515.1 as 
+#     an example of attribution - the EDI dataset is a subset of the one below. 
+
+KLC_orig <- read_csv(paste0(KLC.data.dir, 'sunapee_tn_2007_2012.csv')) %>% 
+  select(-X1) 
+unique(KLC_orig$site)
+
+#drop gloeo-specific sites, create dataset that can be combined with 'chem'
+KLC_filt <- KLC_orig %>% 
+  filter(site != 'Coffin' & site != 'Fichter' & site != 'Midge' & site != 'Newbury' & site != 'Montgomery') %>% 
+  mutate(station = case_when(grepl('010', site) ~ '10',  # harmonize station info
+                          grepl('McKee', site) ~ '30',
+                          grepl('wild goose', site) ~ '80',
+                          grepl('90', site) ~ '90',
+                          grepl('buoy', site, ignore.case = T) ~ 'buoy',
+                          grepl('100.1', site) ~ '100.1',
+                          grepl('70', site) ~ '70',
+                          grepl('110', site) ~ '110',
+                          grepl('200', site) ~ '200',
+                          grepl('210', site) ~ '210',
+                          grepl('220', site) ~ '220',
+                          grepl('230', site) ~ '230',
+                          TRUE ~ NA_character_),
+         layer = case_when(grepl('epi', site) ~ 'E', #pull out layer data, where available
+                           grepl('hypo', site) ~ 'H',
+                           grepl('-E', site) ~ 'E',
+                           grepl('-H', site) ~ 'H',
+                           TRUE ~ NA_character_),
+         depth_m = case_when(grepl('--16', site) ~ 16, #pull out depth data, where available
+                             grepl('6.5', site) ~ 6.5,
+                             grepl('7.5', site) ~ 7.5,
+                             grepl('19.5', site) ~ 19.5,
+                             TRUE ~ NA_real_),
+         depth.measurement = case_when(!is.na(depth_m) ~ 'actual', 
+                                       TRUE ~ NA_character_)) %>% 
+  filter(!is.na(station), #drop non-specific stations
+         Hypo == 0) %>% #only include non-hypo samples
+  mutate(date = as.Date(paste(Year, dayofyr, sep = ' '), format = '%Y %j')) %>% #format date
+  rename(TN_ugl = WC_TN_labmean) %>% 
+  select(TN_ugl, station, date, layer, depth_m, depth.measurement) %>%
+  mutate(parameter = 'TN_mgl',
+         value = TN_ugl/1000,
+         sitetype = case_when(station == '10' | station == '30' | station == '70' | station == '80' | station == '90' ~ 'littoral',
+                              TRUE ~ 'pelagic'),
+         datasource = 'KLC, KCW, HAE 2008 NSF ARRA') %>% #harmonize columns and add datasource
+  select(-TN_ugl) %>% 
+  group_by(station, date, parameter, layer, depth_m, depth.measurement, datasource, sitetype) %>% 
+  summarise(value = mean(value)) #aggregate the couple of overlapping dates/stations
+  
+str(KLC_filt)
+str(chem)
+
+chem <- chem %>% 
+  mutate(station = as.character(station)) %>% 
+  full_join(., KLC_filt)
+
+chem %>% 
+  filter(parameter == 'TN_mgl') %>% 
+  ggplot(., aes(x= date, y = value, color = datasource)) +
+  geom_point() +
+  facet_grid(station ~ .)
+
+write_csv(chem, paste0(dump.dir.calibration, 'lake_chem_1986-2019_v05Oct2020.csv'))
 
