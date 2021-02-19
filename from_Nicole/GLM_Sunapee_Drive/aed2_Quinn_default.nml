@@ -600,7 +600,7 @@
    si_uptake_target_variable='SIL_rsi'
    do_uptake_target_variable='OXY_oxy'
    c_uptake_target_variable='CAR_dic'
-   dbase='aed2_phyto_pars.nml'!'aed2_phyto_pars_WhitneyComparison_6Mar19.nml'
+   dbase='from_Nicole/GLM_Sunapee_Drive/aed2_phyto_pars.nml'!'aed2_phyto_pars_WhitneyComparison_6Mar19.nml'
    extra_diag = .true.
  !zerolimitfudgefactor = ??
   min_rho =  900.0
