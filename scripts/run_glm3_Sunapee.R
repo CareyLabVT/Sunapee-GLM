@@ -1,8 +1,8 @@
-require(devtools)
-devtools::install_github("robertladwig/GLM3r", ref = "v3.1.1")
-devtools::install_github("hdugan/glmtools", ref = "ggplot_overhaul")
-install.packages("rLakeAnalyzer")
-install.packages("tidyverse")
+#require(devtools)
+#devtools::install_github("robertladwig/GLM3r", ref = "v3.1.1")
+#devtools::install_github("hdugan/glmtools", ref = "ggplot_overhaul")
+#install.packages("rLakeAnalyzer")
+#install.packages("tidyverse")
 
 library(glmtools)
 library(GLM3r)
@@ -31,23 +31,9 @@ nml_file <- file.path(sim_folder, 'glm3_woAED.nml')
 
 
 
-# format field observations
-buoy <- read.csv(paste0(sim_folder, '/GLM_Sunapee_Drive/buoy_dailymax_temperature.csv'))
-buoy$time <- '12:00:00'
-buoy$DateTime <- as.POSIXct(paste0(buoy$DateTime, ' ', buoy$time))
-write.csv(buoy, paste0(sim_folder, '/GLM_Sunapee_Drive/buoy_dailymax_temperature_datetime_formatted.csv'), row.names = FALSE)
-
-field_stage <- file.path(paste0(sim_folder, '/GLM_Sunapee_Drive/field_stage.csv'))
-stage_obs <- read.csv(field_stage)
-stage_obs$time <- '12:00:00'
-stage_obs$DateTime <- as.POSIXct(paste0(stage_obs$datetime, ' ', stage_obs$time))
-stage_obs <- stage_obs[,c(4,2)]
-write.csv(stage_obs, paste0(sim_folder, '/GLM_Sunapee_Drive/field_stage_datetime_formatted.csv'), row.names = FALSE)
-
-
 # field files for comparison
-field_temp <- file.path(paste0(sim_folder, '/GLM_Sunapee_Drive/buoy_dailymax_temperature_datetime_formatted.csv'))
-field_stage <- file.path(paste0(sim_folder, '/GLM_Sunapee_Drive/field_stage_datetime_formatted.csv'))
+field_temp <- file.path(paste0(sim_folder, '/data/buoy_dailymax_temperature.csv'))
+field_stage <- file.path(paste0(sim_folder, '/data/field_stage.csv'))
 field_obs <- read.csv(field_temp)
 
 # Run GLMr
@@ -68,8 +54,8 @@ plot_compare_stage(nc_file = out_file,
 stage_obs <- read.csv(field_stage)
 stage_obs$DateTime <- as.POSIXct(stage_obs$DateTime)
 compare_stage <- left_join(water_height, stage_obs)
-plot(stage_obs$DateTime, stage_obs$stage, ylim = c(0, 35))
-points(water_height$DateTime, water_height$surface_height, type = 'l', col = 'red')
+plot(stage_obs$DateTime, stage_obs$stage, ylim = c(0, 35), xlim = c(as.POSIXct('2007-01-01 00:00:00'), as.POSIXct('2014-01-01 00:00:00')))
+points(water_height$DateTime, water_height$surface_height, type = 'l', col = 'red', lwd = 2)
 
 # visualize ice formation over time
 ice_thickness <- get_ice(file = out_file)
@@ -114,12 +100,13 @@ temp_rmse <- compare_to_field(nc_file = out_file,
                               metric = 'water.temperature', 
                               as_value = FALSE, 
                               precision= 'hours')
+temp_rmse
 thermocline_rmse <- compare_to_field(nc_file = out_file, 
                                      field_file = field_temp,
                                      metric = 'thermo.depth', 
                                      as_value = FALSE, 
                                      precision= 'hours')
-
+thermocline_rmse
 epi_temp_rmse <- compare_to_field(nc_file = out_file, 
                                   field_file = field_temp,
                                   metric = 'epi.temperature',
@@ -140,15 +127,16 @@ hypo_temp_rmse <- compare_to_field(nc_file = out_file,
 GLM3r::run_glm(sim_folder, nml_file = 'glm3_wAED.nml', verbose = T)
 sim_vars(out_file)
 
+aed_outfile <- paste0(sim_folder, '/output/output_aed.nc')
 # visualize change of water table over time
-water_height <- get_surface_height(file = out_file)
+water_height <- get_surface_height(file = aed_outfile)
 ggplot(water_height, aes(DateTime, surface_height)) +
   geom_line() +
   ggtitle('Surface water level') +
   xlab(label = '') + ylab(label = 'Water level (m)') +
   theme_minimal()
 
-plot_compare_stage(nc_file = out_file,
+plot_compare_stage(nc_file = aed_outfile,
                    field_file = field_stage)
 
 
@@ -165,7 +153,7 @@ ggplot(ice_thickness, aes(DateTime, `ice(m)`)) +
   theme_minimal()
 
 # visualize change of surface water temp. over time
-surface_temp <- get_var(file = out_file, 
+surface_temp <- get_var(file = aed_outfile, 
                         var_name = 'temp',
                         reference = 'surface',
                         z_out = 2)
@@ -174,7 +162,7 @@ ggplot(surface_temp, aes(DateTime, temp_2)) +
   ggtitle('Surface water temperature') +
   xlab(label = '') + ylab(label = 'Temp. (deg C)') +
   theme_minimal()
-plot_var_nc(out_file, var_name = 'temp')
+plot_var_nc(aed_outfile, var_name = 'temp')
 
 
 
