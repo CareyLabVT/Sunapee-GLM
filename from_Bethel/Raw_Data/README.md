@@ -1,6 +1,6 @@
 #### README for GLM Raw_Data files
 
-last modified 30September2020 by B. Steele (steeleb@caryinstitute.org)
+last modified 01March2021 by B. Steele (steeleb@caryinstitute.org)
 
 files in this folder are the result of collation by B. Steele from a number of sources for Lake Sunapee GLM modeling 
 	
@@ -9,29 +9,38 @@ files in this folder are the result of collation by B. Steele from a number of s
 
 
 # Inflow
-*inflowchem_onevalperday_21Sept2020* <- all chemistry data for streams available 1986-2019. 
+
+*inflowchem_aggregatedonevalperday_01Mar2021.csv* <- all chemistry data for streams available 1986-2019. 
 	Data have been aggregated to a mean value where multiple values per parameter per stream
-	per day were recorded. Data provenance varies. Notes of attribution are within the R program
-	file.
+	per day were recorded. Data provenance varies, source for data listed in 'source' column. 
+	(replaces 'inflowchem_onevalperday_21Sept2020.csv')
 	
 	* date: date of observation in yyyy-mm-dd format	
 	* stream_no: stream where data obtained (stream number from LSPA LMP files)
 	* DOC_rep: number of values aggregated to mean in 'DOC_mmolm3' field	
-	* DOC_mmolm3: dissolved organic carbon in millimols per meter cubed	
+	* DOC_mmolm3: dissolved organic carbon in millimols per meter cubed	(this value is a *mean* if DOC_rep >1)
 	* DOC_flag: lists pertinent flags, 'suspect' observations should be handled with care	
+	* DOC_source: lists sources aggregated for DOC mean
 	* TN_rep: number of values aggregated to mean in 'TN_mmolm3'	
-	* TN_mmolm3: total nitrogen in millimols per meter cubed	
+	* TN_mmolm3: total nitrogen in millimols per meter cubed (this value is a *mean* if TN_rep >1)
 	* TN_flag: lists pertinent flags, 'suspect' observations should be handled with care	
+	* TN_source: lists sources aggregated for TN mean
 	* TP_rep: number of values aggregated to mean in 'TP_mmolm3'	
-	* TP_mmolm3: total phosphorus in millimols per miter cubed
+	* TP_mmolm3: total phosphorus in millimols per miter cubed (this value is a *mean* if TP_rep >1)
 	* TP_flag: lists pertinent flags, 'suspect' observations should be handled with care
+	* TP_source: lists sources aggregated for TP mean
+	
+	FLAGS: 'BDL' = below detection limit
+	
+*inflowchem_TNTPDOC_allstream_01Mar2021.csv* <- this has the same data as above file, but is unaggregated to a single
+	value per day.
 	
 	
 # Lake
 
-*chlorophylla_1986-2019_v28Sept2020* <- all chlorophyll data for years 1986-2019. Data provenence
+*chlorophylla_1986-2020_v01Mar2021.csv* <- all chlorophyll data for years 1986-2019. Data provenence
 	listed in datasource column, the primary sources are the LSPA's LMP files and the trophic
-	reports provided by Woody.
+	reports provided by Woody. (replaces chlorophylla_1986-2019_v28Sept2020.csv)
 	
 	* date: date of observation in yyyy-mm-dd format	
 	* station: site of observation	
@@ -58,9 +67,9 @@ files in this folder are the result of collation by B. Steele from a number of s
 		* Trophic Reports Woody - from DES trophic reports via Woody (LSPA)	
 	* flag: lists pertinent flags, 'suspect' observations should be handled with care	
 
-*lake_chem_1986-2019_v28Sept2020* <- any available chemistry/nutrient data for Sunapee for years
+*lake_chem_1986-2020_v01March2021.csv* <- any available chemistry/nutrient data for Sunapee for years
 	1986-2019. Data provenece listed in datasource column, the primary sources are the LSPA's 
-	LMP files and the trophic reports provided by Woody.
+	LMP files and the trophic reports provided by Woody. (replaces lake_chem_1986-2019_v28Sept2020.csv)
 
 	* date: date of observation in yyyy-mm-dd format	
 	* station: site of observation	
@@ -87,10 +96,10 @@ files in this folder are the result of collation by B. Steele from a number of s
 		* Trophic Reports Woody - from DES trophic reports via Woody (LSPA)	
 	* sitetype: indicates whether site is littoral or pelagic	
 
-*LMP_lowresDOTemp_1986-2019_v28Sept2020* <- any available low-resolution dissolved oxygen or 
-	temperature data (from profiles) for Sunapee for years 1986-2019. Data provenece listed in 
+*dotemp_1986-2020_v01Mar2021.csv* <- any available low-resolution dissolved oxygen or 
+	temperature data (from profiles) for Sunapee for years 1986-2020. Data provenece listed in 
 	datasource column, the primary sources are the LSPA's LMP files and the trophic reports 
-	provided by Woody.
+	provided by Woody. (replaces LMP_lowresDOTemp_1986-2019_v28Sept2020.csv)
 	
 	* station: site of observation	
 	* date: date of observation in yyyy-mm-dd format	
@@ -118,8 +127,8 @@ files in this folder are the result of collation by B. Steele from a number of s
 		* LMP bio - data from the LSPA's LMP database (secchi depth and chlorophyll a) (v27Jul2020)
 		* Trophic Reports Woody - from DES trophic reports via Woody (LSPA)	
 
-*secchi_1986-2019_v28Sept2020.csv* <- this file lists secchi depths measured in Sunapee at all sites. Data
-	provenence listed in the datasource column.
+*secchi_1986-2020_v01Mar2021.csv* <- this file lists secchi depths measured in Sunapee at all sites. Data
+	provenence listed in the datasource column. (replaces secchi_1986-2019_v28Sept2020.csv)
 	
 	* date: date of observation in yyyy-mm-dd format	
 	* station: site of observation	
@@ -132,6 +141,7 @@ files in this folder are the result of collation by B. Steele from a number of s
 		* LMP bio - data from the LSPA's LMP database (secchi depth and chlorophyll a) (v27Jul2020)
 		* Trophic Reports Woody - from DES trophic reports via Woody (LSPA)	
 	* flag: lists pertinent flags, 'suspect' observations should be handled with care	
+
 
 
 # HypsographyStorage
