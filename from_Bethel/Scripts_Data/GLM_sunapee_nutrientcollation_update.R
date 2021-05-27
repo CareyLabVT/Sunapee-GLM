@@ -12,6 +12,7 @@
 #* BY:      B. Steele                                            *
 #* NOTES:   v 21Sept2020 - update data collation through 2019    *
 #*          v 05OCt2020 - update with data from KLC              *
+#*          v 01March2021 - update with data stored in ion sasdatalibr
 #*****************************************************************
 
 library(tidyverse) #v 1.3.0
@@ -34,7 +35,7 @@ KLC.data.dir = 'C:/Users/steeleb/Dropbox/Lake Sunapee/monitoring/TN data from KL
 # from analyzing the precip data at the same time period so that we have a daily value over time.
 
 #bring in lspa data (LMP data base) -- data should be attributed to the LSPA
-lspa_chem_inflow <- read_csv(paste0(LSPA.data.dir, 'master files/stream_chem_1986-2019_v27Jul2020.csv'))
+lspa_chem_inflow <- read_csv(paste0(LSPA.data.dir, 'master files/stream_chem_1986-2020_v01Mar2021.csv'))
 str(lspa_chem_inflow)
 #subset for desired streams
 lspa_streamchem <- subset(lspa_chem_inflow, subset=station %in% c(505, 510, 515, 540, 640, 665, 670, 720, 750, 760, 788, 790, 800, 805, 830, 835))
@@ -44,6 +45,8 @@ unique(lspa_streamchem$parameter)
 
 lspa_stream_TP <- lspa_streamchem %>% 
   filter(parameter == 'TP_mgl')
+ggplot(lspa_stream_TP, aes(x = date, y = value, color = flag)) +
+  geom_point()
 
 #subset for non-NA data only
 lspa_stream_TP <- lspa_stream_TP %>% 
@@ -56,7 +59,8 @@ lspa_stream_TP$TP_mmolm3 <- lspa_stream_TP$value*(1/30.973761)*(1000)
 #rename for merge
 lspa_stream_TP <- lspa_stream_TP %>% 
   rename(stream_no = station)
-lspa_stream_TP <- subset(lspa_stream_TP, select=c('date', 'stream_no', 'TP_mmolm3', 'flag'))
+lspa_stream_TP <- subset(lspa_stream_TP, select=c('date', 'stream_no', 'TP_mmolm3', 'flag')) %>% 
+  mutate(source = 'LSPA LMP VLAP')
 
 head(lspa_stream_TP)
 
@@ -76,7 +80,9 @@ TNTP_stream_CCC <- subset(TNTP_stream_CCC, select=c('Stream.ID', 'date', 'TP_mmo
 #rename stream ID
 TNTP_stream_CCC <- TNTP_stream_CCC %>% 
   rename(stream_no = Stream.ID) %>% 
-  mutate(stream_no = as.numeric(stream_no))
+  mutate(stream_no = as.numeric(stream_no)) 
+TNTP_stream_CCC <- TNTP_stream_CCC %>% 
+  mutate(source = 'CCC 2012')
 
 head(TNTP_stream_CCC)
 
@@ -89,7 +95,6 @@ ion <- read_csv(paste0(SAS.data.dir, 'all_ion_data.csv'))
 #format date
 doc$date <- as.Date(doc$collect_date, format="%Y-%m-%d")
 ion$date <- as.Date(ion$collect_date, format="%Y-%m-%d")
-# p$date <- as.Date(p$collect_date, format="%Y-%m-%d")
 
 #subset for data associated with stream inflow 505, 665, 788, 790, 805, 830
 doc_sub <- subset(doc, subset=stream_no %in% c(505, 510, 515, 540, 640, 665, 670, 720, 750, 760, 788, 790, 800, 805, 830, 835))
@@ -115,55 +120,62 @@ ion_sub$TN_mmolm3 <- ion_sub$TN_mgl*(1/14.0067)*(1/0.001)
 sas_NPC <- full_join(doc_sub, ion_sub)
 
 #select desired variables
-sas_NPC <- subset(sas_NPC, select=c('date', 'stream_no', 'DOC_mmolm3', 'TN_mmolm3', 'flag'))
+sas_NPC <- subset(sas_NPC, select=c('date', 'stream_no', 'DOC_mmolm3', 'TN_mmolm3', 'flag')) %>% 
+  mutate(source = 'sasdatalibr')
 
 head(sas_NPC)
 
 #merge all inflow datasets
-inflow_chem <- full_join(lspa_stream_TP, TNTP_stream_CCC) %>% 
+inflow_TNTPDOC_chem <- full_join(lspa_stream_TP, TNTP_stream_CCC) %>% 
   full_join(., sas_NPC)
 
-ggplot(inflow_chem, aes(x = date, y = TN_mmolm3, color = flag)) +
+ggplot(inflow_TNTPDOC_chem, aes(x = date, y = TN_mmolm3, color = flag)) +
   geom_point()
 
-ggplot(inflow_chem, aes(x = date, y = TP_mmolm3, color = flag)) +
+ggplot(inflow_TNTPDOC_chem, aes(x = date, y = TP_mmolm3, color = flag)) +
   geom_point()
 
-ggplot(inflow_chem, aes(x = date, y = DOC_mmolm3, color = flag)) +
+ggplot(inflow_TNTPDOC_chem, aes(x = date, y = DOC_mmolm3, color = flag)) +
   geom_point()
 
-# write_csv(inflow_chem, paste0(dump.dir.streamchem, 'inflowchem_allstream_21Sept2020.csv'))
+inflow_TNTPDOC_chem %>% 
+  select(date, stream_no, TP_mmolm3, TN_mmolm3, DOC_mmolm3, flag, source) %>% 
+  write_csv(., paste0(dump.dir.streamchem, 'inflowchem_TNTPDOC_allstream_01Mar2021.csv'))
 
 
 #### create matrices for bootstrapping ####
-inflow_chem_doc_summary <- inflow_chem %>% 
-  select(DOC_mmolm3, date, stream_no, flag) %>% 
+inflow_chem_doc_summary <- inflow_TNTPDOC_chem %>% 
+  select(DOC_mmolm3, date, stream_no, flag, source) %>% 
   filter(!is.na(DOC_mmolm3)) %>% 
   group_by(date, stream_no) %>% 
-  summarise(DOC_rep = length(DOC_mmolm3),
-            DOC_mmolm3 = mean(DOC_mmolm3),
-            DOC_flag = toString(flag, sep = ', '))
+  summarise(DOC_rep = length(na.omit(DOC_mmolm3)),
+            DOC_mmolm3 = mean(na.omit(DOC_mmolm3)),
+            DOC_flag = toString(na.omit(flag), sep = ', '),
+            DOC_source = toString(na.omit(source), sep = ', '))
 
-inflow_chem_tn_summary <- inflow_chem %>% 
-  select(TN_mmolm3, date, stream_no, flag) %>% 
+inflow_chem_tn_summary <- inflow_TNTPDOC_chem %>% 
+  select(TN_mmolm3, date, stream_no, flag, source) %>% 
   filter(!is.na(TN_mmolm3)) %>% 
   group_by(date, stream_no) %>% 
-  summarise(TN_rep = length(TN_mmolm3),
-            TN_mmolm3 = mean(TN_mmolm3),
-            TN_flag = toString(flag, sep = ', '))
+  summarise(TN_rep = length(na.omit(TN_mmolm3)),
+            TN_mmolm3 = mean(na.omit(TN_mmolm3)),
+            TN_flag = toString(na.omit(flag), sep = ', '),
+            TN_source = toString(na.omit(source), sep = ', '))
 
-inflow_chem_tp_summary <- inflow_chem %>% 
-  select(TP_mmolm3, date, stream_no, flag) %>% 
+inflow_chem_tp_summary <- inflow_TNTPDOC_chem %>% 
+  select(TP_mmolm3, date, stream_no, flag, source) %>% 
   filter(!is.na(TP_mmolm3)) %>% 
   group_by(date, stream_no) %>% 
-  summarise(TP_rep = length(TP_mmolm3),
-            TP_mmolm3 = mean(TP_mmolm3),
-            TP_flag = toString(flag, sep = ', '))
+  summarise(TP_rep = length(na.omit(TP_mmolm3)),
+            TP_mmolm3 = mean(na.omit(TP_mmolm3)),
+            TP_flag = toString(na.omit(flag), sep = ', '),
+            TP_source = toString(na.omit(source), sep = ', '))
 
 inflow_chem_summary <- full_join(inflow_chem_doc_summary, inflow_chem_tn_summary) %>% 
-  full_join(., inflow_chem_tp_summary)
+  full_join(., inflow_chem_tp_summary) %>% 
+  arrange(date)
 
-# write_csv(inflow_chem_summary, paste0(dump.dir.streamchem, 'inflowchem_onevalperday_21Sept2020.csv'))
+write_csv(inflow_chem_summary, paste0(dump.dir.streamchem, 'inflowchem_aggregatedonevalperday_01Mar2021.csv'))
 
 
 
@@ -183,11 +195,11 @@ sitetype=c('littoral', 'littoral', 'littoral', 'littoral', 'littoral', 'littoral
 site_descrip <- data.frame(site, maxdepth, sitetype)
 
 # lspa data (LMP data base) #
-LMP_bio <- read_csv(paste0(LSPA.data.dir, 'master files/lake_bio_1986-2019_v27Jul2020.csv')) 
-LMP_chem <- read_csv(paste0(LSPA.data.dir, 'master files/lake_chem_1986-2019_v27Jul2020.csv'),
+LMP_bio <- read_csv(paste0(LSPA.data.dir, 'master files/lake_bio_1986-2020_v01Mar2021.csv')) 
+LMP_chem <- read_csv(paste0(LSPA.data.dir, 'master files/lake_chem_1986-2020_v01Mar2021.csv'),
                      col_types = c('nDnccnc'))
-LMP_do <- read_csv(paste0(LSPA.data.dir, 'master files/raw_do_1986-2019_v27Jul2020.csv'),
-                   col_types = c('nDnccn'))
+LMP_do <- read_csv(paste0(LSPA.data.dir, 'master files/raw_do_1986-2020_v01Mar2021.csv.csv'),
+                   col_types = c('nDncccn'))
 ## all data attributable to LSPA ##
 
 ##LMP_bio data set
@@ -203,8 +215,6 @@ LMP_SD <- LMP_bio %>%
   filter(parameter == 'secchidepth_m')
 LMP_SD <- subset(LMP_SD, subset=!is.na(value))
 
-# write_csv(LMP_SD, paste0(dump.dir.calibration, 'secchi_1986-2019_v27Jul2020.csv'))
-
 #determine missing depths by summarizing available data
 layer_depth_LMP <- subset(LMP_chem, select=c('station', 'depth_m', 'layer'))
 layer_depth_LMP <- subset(layer_depth_LMP, subset=!(is.na(depth_m) | layer == ' '))
@@ -217,7 +227,7 @@ layer_depth_summary <- merge(layer_depth_summary, site_descrip, by.x='station', 
 
 
 #subset for litttoral sites and merge by location only (layer is irrelevant for this merge)
-LMP_chem_l <- subset(LMP_chem, subset= station < 200)
+LMP_chem_l <- subset(LMP_chem, subset= station < 200 & date < as.Date('2018-01-01'))
 LMP_chem_lm <- merge(LMP_chem_l, layer_depth_summary, by.x = c('station'), by.y=c('station'), all.x=T )
 LMP_chem_lm$depth.measurement [!is.na(LMP_chem_lm$depth_m)] = 'actual'
 LMP_chem_lm$depth.measurement [is.na(LMP_chem_lm$depth_m)] = 'mean'
@@ -228,7 +238,7 @@ LMP_chem_lm <- LMP_chem_lm %>%
   rename(layer = layer.x)
 
 #subset for pelagica and add depth details where na
-LMP_chem_p <- subset(LMP_chem, subset= station >= 200)
+LMP_chem_p <- subset(LMP_chem, subset= station >= 200 & date < as.Date('2018-01-01'))
 LMP_chem_pm <- merge(LMP_chem_p, layer_depth_summary, by.x = c('station', 'layer'), by.y=c('station', 'layer'), all.x=T )
 LMP_chem_pm$depth.measurement [!is.na(LMP_chem_pm$depth_m)] = 'actual'
 LMP_chem_pm$depth.measurement [is.na(LMP_chem_pm$depth_m)] = 'median'
@@ -249,7 +259,6 @@ LMP_do <- LMP_do %>%
   select(-maxdepth)
 LMP_do$datasource <- 'LMP DO'
 
-# write_csv(LMP_do, paste0(dump.dir.calibration, 'LMP_lowresDOTemp_1986-2019_v28Sept2020.csv'))
 
 #### woody lake data - from trophic reports ####
 woody <- read_xlsx(paste0(LSPA.data.dir, 'raw data/from LSPA/Woody data.xlsx'))
@@ -273,13 +282,17 @@ LMP_chla <- LMP_chla %>%
 
 chla <- full_join(chla_woody, LMP_chla) %>% 
   filter(date >= as.Date('1986-01-01')) %>% 
-  filter(station != 222 & station != 225)
+  filter(station == 100 | station == 200 | station == 210 | station == 220 | station ==230)
 
 ggplot(chla, aes(x = date, y = value, color = flag)) +
   geom_point() +
   facet_grid(station ~ .)
 
-# write_csv(chla, paste0(dump.dir.calibration, 'chlorophylla_1986-2019_v28Sept2020.csv'))
+ggplot(chla, aes(x = date, y = value, color = datasource)) +
+  geom_point() +
+  facet_grid(station ~ .)
+
+write_csv(chla, paste0(dump.dir.calibration, 'chlorophylla_1986-2020_v01Mar2021.csv'))
 
 ## secchi ##
 secchi_woody <- subset(woody, subset=(parameter=='secchi'))
@@ -294,13 +307,17 @@ LMP_SD <- LMP_SD %>%
 
 secchi <- full_join(secchi_woody, LMP_SD) %>% 
   filter(date >= as.Date('1986-01-01')) %>% 
-  filter(station != 222 & station != 225)
+  filter(station == 100 | station == 200 | station == 210 | station == 220 | station ==230)
 
 ggplot(secchi, aes(x = date, y = value, color = flag)) +
   geom_point() +
   facet_grid(station ~ .)
 
-# write_csv(secchi, paste0(dump.dir.calibration, 'secchi_1986-2019_v28Sept2020.csv'))
+ggplot(secchi, aes(x = date, y = value, color = datasource)) +
+  geom_point() +
+  facet_grid(station ~ .)
+
+write_csv(secchi, paste0(dump.dir.calibration, 'secchi_1986-2020_v01Mar2021.csv'))
 
 ## do temp ##
 dotemp_woody <- woody %>% 
@@ -323,13 +340,14 @@ str(LMP_do)
 
 dotemp <- full_join(dotemp_woody, LMP_do) %>% 
   filter(date >= as.Date('1986-01-01')) %>% 
-  filter(station != 222 & station != 225 & station != 999)
+  filter(station == 100 | station == 200 | station == 210 | station == 220 | station ==230)
 str(dotemp)
 
 ggplot(dotemp, aes(x = date, y = value, color = flag)) +
   geom_point() +
   facet_grid(parameter ~ station, scales = 'free_y')
 
+write_csv(dotemp, paste0(dump.dir.calibration, 'dotemp_1986-2020_v01Mar2021.csv'))
 
 #chemistry ##
 chem_woody <- woody %>% 
@@ -413,7 +431,8 @@ str(chem)
 
 chem <- chem %>% 
   mutate(station = as.character(station)) %>% 
-  full_join(., KLC_filt)
+  full_join(., KLC_filt) %>% 
+  mutate(depth_m = round(depth_m, digits = 0))
 
 chem %>% 
   filter(parameter == 'TN_mgl') %>% 
@@ -421,5 +440,5 @@ chem %>%
   geom_point() +
   facet_grid(station ~ .)
 
-write_csv(chem, paste0(dump.dir.calibration, 'lake_chem_1986-2019_v05Oct2020.csv'))
+write_csv(chem, paste0(dump.dir.calibration, 'lake_chem_1986-2020_v01March2021.csv'))
 
