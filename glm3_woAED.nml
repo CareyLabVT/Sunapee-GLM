@@ -48,7 +48,7 @@
 &output
    out_dir = 'output'
    out_fn = 'output'
-   nsave = 24
+   nsave = 24 ! number of hours that pass before saving, 24 means saving once daily
    csv_lake_fname = 'lake'
 /
 &init_profiles
@@ -70,7 +70,7 @@
    rain_sw = .false.
    atm_stab = 0
    catchrain = .false.
-   rad_mode = 2
+   rad_mode = 1
    albedo_mode = 1
    cloud_mode = 4
    meteo_fl = 'data/SunapeeMet_1979_2020EST.csv'
@@ -83,13 +83,13 @@
    rain_factor = 1
    cd = 0.0013
    ce = 0.0013
-   ch = 0.00124222863441015, 0.512789495779882
+   ch =  0.0013 !0.00124222863441015, 0.512789495779882
    rain_threshold = 0.001
    runoff_coef = 0.99
    time_fmt = 'YYYY-MM-DD hh:mm:ss'
 /
 &inflow
-   num_inflows = 1
+   num_inflows = 0
    names_of_strms = 'ibal'
    subm_flag = .false.
    strm_hf_angle = 65
@@ -101,7 +101,7 @@
    inflow_vars = 'FLOW','SALT','TEMP','OGM_doc','OGM_poc','OGM_don','NIT_nit','NIT_amm','OGM_pon','PHS_frp','OGM_dop','OGM_pop','PHS_frp_ads'
 /
 &outflow
-   num_outlet = 1
+   num_outlet = 0
    outlet_type = 1
    outl_elvs = 332.3143
    bsn_len_outl = 799
@@ -114,27 +114,25 @@
    snow_rho_max = 500
    snow_rho_min = 100
 /
-&sediment!glm2doesnothave2sedimentzones
-   benthic_mode = 2
-   sed_heat_model = 1
-   n_zones = 2
-   zone_heights = 10, 20
-   sed_temp_mean = 3.46308320462984, 9.50920557379741 !FCR is 11, 14
-   !sed_temp_depth = 0.2, 0.2
-   sed_temp_amplitude = 4, 3
-   sed_temp_peak_doy = 242.5, 242.5
-   sed_heat_Ksoil = 0.1, 0.1
-/
-! JW's calibration
 !&sediment!glm2doesnothave2sedimentzones
 !   benthic_mode = 2
 !   sed_heat_model = 1
 !   n_zones = 2
-!   zone_heights = 20, 33
-!   sed_temp_mean = 7, 14
-!   sed_temp_depth = 0.2, 0.2
+!   zone_heights = 10, 20
+!   sed_temp_mean = 3.46308320462984, 9.50920557379741 !FCR is 11, 14
+!   !sed_temp_depth = 0.2, 0.2
 !   sed_temp_amplitude = 4, 3
 !   sed_temp_peak_doy = 242.5, 242.5
-!   sed_heat_Ksoil = 1.8, 1.8
+!   sed_heat_Ksoil = 0.1, 0.1
 !/
-!
+&sediment!glm2doesnothave2sedimentzones
+   benthic_mode = 2
+   sed_heat_model = 1
+   n_zones = 2
+   zone_heights = 20, 33
+   sed_temp_mean = 7, 14
+   sed_temp_depth = 0.2, 0.2
+   sed_temp_amplitude = 4, 3
+   sed_temp_peak_doy = 242.5, 242.5
+   sed_heat_Ksoil = 1.8, 1.8
+/
