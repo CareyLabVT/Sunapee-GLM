@@ -22,6 +22,7 @@ process_gridded_noaa_download <- function(lat_list,
                                           site_list,
                                           downscale,
                                           debias = FALSE,
+                                          process_dates,
                                           overwrite,
                                           model_name,
                                           model_name_ds,
@@ -128,20 +129,21 @@ process_gridded_noaa_download <- function(lat_list,
 
   curr_time <- lubridate::with_tz(Sys.time(), tzone = "UTC")
   curr_date <- lubridate::as_date(curr_time)
-  potential_dates <- seq(curr_date - lubridate::days(3), curr_date, by = "1 day")
+  #potential_dates <- seq(curr_date - lubridate::days(3), curr_date, by = "1 day")
 
-  if(reprocess){
-    potential_dates <- lubridate::as_date(list.dirs(model_name_raw_dir, recursive = FALSE, full.names = FALSE))
-  }
+  #if(reprocess){
+  #  potential_dates <- lubridate::as_date(list.dirs(model_name_raw_dir, recursive = FALSE, full.names = FALSE))
+  #}
   #Remove dates before the new GEFS system
-  potential_dates <- potential_dates[which(potential_dates > lubridate::as_date("2020-09-23"))]
+  potential_dates <- process_dates
+    #potential_dates[which(potential_dates > lubridate::as_date("2020-09-23"))]
 
   for(k in 1:length(potential_dates)){
 
 
 
     forecast_date <- lubridate::as_date(potential_dates[k])
-    forecast_hours <- c(0,6,12,18)
+    forecast_hours <- c(00,6,12,18)
 
 
 
@@ -163,18 +165,18 @@ process_gridded_noaa_download <- function(lat_list,
       raw_files <- list.files(file.path(model_name_raw_dir,forecast_date,cycle))
       hours_present <- as.numeric(stringr::str_sub(raw_files, start = 25, end = 27))
 
-      all_downloaded <- FALSE
-      if(cycle == "00"){
-        #Sometime the 16-35 day forecast is not competed for some of the forecasts.  If over 24 hrs has passed then they won't show up.
-        #Go ahead and create the netcdf files
-        if(length(which(hours_present == 840)) == 30 | (length(which(hours_present == 384)) == 30 & curr_forecast_time + lubridate::hours(36) < curr_time)){
-          all_downloaded <- TRUE
-        }
-      }else{
-        if(length(which(hours_present == 384)) == 31 | (length(which(hours_present == 384)) == 31 & curr_forecast_time + lubridate::hours(36) < curr_time)){
-          all_downloaded <- TRUE
-        }
-      }
+      all_downloaded <- TRUE
+#      if(cycle == "00"){
+#        #Sometime the 16-35 day forecast is not competed for some of the forecasts.  If over 24 hrs has passed then they won't show up.
+#        #Go ahead and create the netcdf files
+#        if(length(which(hours_present == 840)) == 30 | (length(which(hours_present == 384)) == 30 & curr_forecast_time + lubridate::hours(36) < curr_time)){
+#          all_downloaded <- TRUE
+#        }
+#      }else{
+#        if(length(which(hours_present == 384)) == 31 | (length(which(hours_present == 384)) == 31 & curr_forecast_time + lubridate::hours(36) < curr_time)){
+#          all_downloaded <- TRUE
+#        }
+#      }
 
       missing_files <- FALSE
       for(site_index in 1:length(site_list)){
@@ -302,7 +304,7 @@ process_gridded_noaa_download <- function(lat_list,
 
           noaa_data$air_temperature$value <- noaa_data$air_temperature$value + 273.15
 
-          specific_humidity[which(!is.na(noaa_data$relative_humidity$value))] <- rh2qair(rh = noaa_data$relative_humidity$value[which(!is.na(noaa_data$relative_humidity$value))],
+          specific_humidity[which(!is.na(noaa_data$relative_humidity$value))] <- noaaGEFSpoint:::rh2qair(rh = noaa_data$relative_humidity$value[which(!is.na(noaa_data$relative_humidity$value))],
                                                                                          T = noaa_data$air_temperature$value[which(!is.na(noaa_data$relative_humidity$value))],
                                                                                          press = noaa_data$air_pressure$value[which(!is.na(noaa_data$relative_humidity$value))])
 
@@ -343,7 +345,8 @@ process_gridded_noaa_download <- function(lat_list,
 
             end_date <- forecast_noaa_ens %>%
               dplyr::summarise(max_time = max(time))
-
+            #as.POSIXct(potential_dates) + lubridate::days(35)
+            
             identifier <- paste(model_name, site_list[site_index], format(forecast_date, "%Y-%m-%dT%H"),
                                 format(end_date$max_time, "%Y-%m-%dT%H"), sep="_")
 
