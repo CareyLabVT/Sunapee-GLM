@@ -3,8 +3,8 @@
 library(aws.s3)
 library(noaaGEFSpoint)
 noaadir <- paste0(getwd(), '/data/noaa-data')
-date <- "2021-05-01" 
-cycle <- "00"
+date <- "2021-04-01" 
+cycle <- "00" #00, 06, 12, 18
 prefix <- paste("noaa", paste0("NOAAGEFS_raw"), 
                 date, cycle, sep="/")  
 
@@ -48,4 +48,4 @@ process_gridded_noaa_download(lat_list = 43.393054,
                               reprocess = FALSE)
 
 
-# write a loop to REPEAT THIS PROCESS FOR EACH CYCLE (do we need all cycles??) and for each desired date
+# write a loop to REPEAT THIS PROCESS for each desired date
