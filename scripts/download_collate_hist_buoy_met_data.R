@@ -38,5 +38,9 @@ hist_data <- hist_data %>%
 
 colnames(hist_data) <- c('time', 'par', 'AirTemp', 'WindSpeed')
 
-par.to.sw(data = hist_data, par = hist_data$par)
-  
+hist_data <- hist_data %>% 
+  mutate(ShortWave = par.to.sw.base(par = hist_data$par)) %>% 
+  select(time, ShortWave, AirTemp, WindSpeed)
+# calc.lw.net for longwave??
+
+write.csv(hist_data, paste0(getwd(),'/data/formatted-data/hist_buoy_met.csv' ), row.names = FALSE)
