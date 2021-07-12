@@ -53,5 +53,5 @@ if (length(dam_names) == 6) {
     write.csv(collated_dam, file.path(dir, 'SUNP_dam.csv'), row.names = F)
     } else {
     #if the dam data have changed structure, write no file
-      }
+}
 
