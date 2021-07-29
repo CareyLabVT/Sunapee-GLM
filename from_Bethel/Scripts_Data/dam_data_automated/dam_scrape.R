@@ -45,6 +45,8 @@ if (length(dam_names) == 6) {
            'precip_in' = dam_names[5],
            'air_temp_degF' = dam_names[6])  %>%
     select(datetime, lake_elev_ft:air_temp_degF) %>%
+    mutate_at(vars(lake_elev_ft, obs_flow, obs_stage, precip_in, air_temp_degF), 
+              ~as.character(.)) %>% 
     filter(!is.na(lake_elev_ft) | !is.na(obs_flow) | !is.na(obs_stage) | !is.na(precip_in) | !is.na(air_temp_degF)) %>%
     filter(datetime > lastobs)
     #join with collated dam data
