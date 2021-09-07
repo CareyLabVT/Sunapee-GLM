@@ -18,10 +18,10 @@
             'aed2_nitrogen',
             'aed2_phosphorus',
             'aed2_organic_matter',
-            'aed2_phytoplankton',
-            'aed2_zooplankton',
-            'aed2_tracer',
-            'aed2_totals'
+            !'aed2_phytoplankton',
+            !'aed2_zooplankton',
+            'aed2_tracer'
+            !'aed2_totals'
 /
 
 
@@ -39,7 +39,7 @@
 !                                        - computed by model
 !-------------------------------------------------------------------------------
 &aed2_sedflux
-   sedflux_model = ‘Constant’
+   sedflux_model = 'Constant'
 /
 
 
@@ -155,26 +155,48 @@
 !        -
 !-------------------------------------------------------------------------------
 &aed2_carbon
-   !-- DIC and pH --
-   ! dic_initial = 3750  ! Mendota ~ 45 mg/L, Crystal ~ 1 mg/L
-   Fsed_dic = 10 !3.0, IC not in manual Snortheim 4.908
-   Ksed_dic = 6.8 ! 20.0, Snortheim 24.338
-   theta_sed_dic = 1.07 ! 1.08, Snortheim 1.0212
-!   Fsed_dic_variable='SDF_Fsed_dic'
-   pH_initial = 8.4 ! 7.5, Snortheim 8.4
-   atmco2 = 400e-6
+   dic_initial = 200
+   Fsed_dic = 250
+   Ksed_dic = 7
+   theta_sed_dic = 1.08
+   pH_initial = 8.4
+   atm_co2 = 4e-04
+   co2_model = 1
+   alk_mode = 2
    ionic = 0.1
-   !-- CH4 --
-   ch4_initial = 27
-   Rch4ox = 0.1
+   co2_piston_model = 1
+   ch4_initial = 5
+   Rch4ox = 10
    Kch4ox = 0.5
-   vTch4ox = 1.07
-   Fsed_ch4 = 10
-   Ksed_ch4 = 100.0
-   theta_sed_ch4 = 1.07
-   methane_reactant_variable='OXY_oxy'
-!  Fsed_ch4_variable='SDF_Fsed_ch4'
+   vTch4ox = 1.08
+   Fsed_ch4 = 60
+   Ksed_ch4 = 30
+   theta_sed_ch4 = 1.08
+   methane_reactant_variable = 'OXY_oxy'
+   atm_ch4 = 1.76e-06
+   ch4_piston_model = 1
 /
+!&aed2_carbon
+!   !-- DIC and pH --
+!   dic_initial = 3750  ! Mendota ~ 45 mg/L, Crystal ~ 1 mg/L
+!   Fsed_dic = 10 !3.0, IC not in manual Snortheim 4.908
+!   Ksed_dic = 6.8 ! 20.0, Snortheim 24.338
+!   theta_sed_dic = 1.07 ! 1.08, Snortheim 1.0212
+!!   Fsed_dic_variable='SDF_Fsed_dic'
+!   pH_initial = 8.4 ! 7.5, Snortheim 8.4
+!   atmco2 = 400e-6
+!   ionic = 0.1
+!   !-- CH4 --
+!   ch4_initial = 27
+!   Rch4ox = 0.1
+!   Kch4ox = 0.5
+!   vTch4ox = 1.07
+!   Fsed_ch4 = 10
+!   Ksed_ch4 = 100.0
+!   theta_sed_ch4 = 1.07
+!   methane_reactant_variable='OXY_oxy'
+!!  Fsed_ch4_variable='SDF_Fsed_ch4'
+!/
 
 
 !###############################################################################
@@ -372,67 +394,126 @@
 !        -
 !
 !-------------------------------------------------------------------------------
+!&aed2_organic_matter
+!   !-- ORGANIC NITROGEN
+!   !pon_initial = 50.0
+!   !don_initial = 50.0
+!   donr_initial = 0.00001
+!   w_pon = -0.035 !WRR revisions test -0.025;original sub = 0.015Snortheim -0.1238, Manual: -10
+!   Rpon_miner = 0.0027 !WRR 1p5xtest;original sub = 0.0018 Manual: 0.005 - 0.03, Emily: 0.035
+!   Rdon_miner = 0.0085 !WRR recal = -.007; original sub = 0.006Manual: 0.003 - 0.05
+!   Fsed_pon = -0.02 !github says = 0 (and doesn’t have divided by secs in day)
+!   Fsed_don = 0.01 !Manual: 0.07 - 0.57
+!   Kpon_miner = 78 !Manual: 47 - 78 (lakes)
+!   Kdon_miner = 78 !Manual: 47 - 78 (lakes)
+!   Ksed_don = 100 !Snortheim 4.5, Manual: 100
+!   theta_pon_miner = 1.07
+!   theta_don_miner = 1.07
+!   theta_sed_don = 1.07
+!   don_miner_product_variable='NIT_amm'
+!   donr_initial = 0.0
+!   !-- ORGANIC PHOSPHORUS
+!   !pop_initial = 1.0
+!   !dop_initial = 1.0
+!   dopr_initial = 0.0
+!   !w_pop = -0.1238 !Manual: -1
+!   w_pop = -0.055 ! WRR;recal=-0.045; original submission= -0.03 !Manual: -1
+!   Rpop_miner = 0.015 !WRR; recal=0.02; original sub = 0.01; Manual: 0.01 - 0.03
+!   Rdop_miner = 0.02 !WRR; real = 0.04; original sub = 0.02;Manual: 0.01 - 0.05
+!   Fsed_pop = -0.001 !-1 new feb8,2017 !github says = 0 (and doesn’t have divided by secs in day)
+!   Fsed_dop = 0.001 !0.01feb8,2017 was 0.001 !Manual: 0.03
+!   Kpop_miner = 78 !Manual: 47 - 78 (lakes)
+!   Kdop_miner = 78 !Manual: 47 - 78 (lakes)
+!   Ksed_dop = 100 !Manual: 150 for estuaries?
+!   theta_pop_miner = 1.07
+!   theta_dop_miner = 1.07
+!   theta_sed_dop = 1.07
+!   dop_miner_product_variable='PHS_frp'
+!   !-- ORGANIC CARBON
+!   !poc_initial = 80.0
+!   !doc_initial = 400.0
+!   docr_initial = 0.0
+!   w_poc = -0.05 !Snortheim -0.1238, Manual: -1
+!   Rpoc_miner = 0.0001 !Manual: 0.01 - 0.07 (0.008)
+!   Rdoc_miner = 0.0001 !Manual: 0.035 - 0.05
+!   Fsed_poc = -0.01 !github says = 0 (and doesn’t have divided by secs in day)
+!   Fsed_doc = .1 !??, originally set to 0
+!   Kpoc_miner = 78 !Manual: 47 - 78 (lakes)
+!   Kdoc_miner = 78 !Manual: 47 - 78 (lakes)
+!   Ksed_doc = 15 !Manual: ??
+!   theta_poc_miner = 1.07
+!   theta_doc_miner = 1.07
+!   theta_sed_doc = 1.07
+!   KeDOM=0.00015 ! for DOC, should be about 0.003
+!   KePOM=0.0025
+!   doc_miner_reactant_variable='OXY_oxy'
+!   doc_miner_product_variable= 'CAR_dic'
+!!  Fsed_pon_variable='SDF_Fsed_pon'
+!!  Fsed_don_variable='SDF_Fsed_don'
+!!  Fsed_pop_variable='SDF_Fsed_pop'
+!!  Fsed_dop_variable='SDF_Fsed_dop'
+!!  Fsed_poc_variable='SDF_Fsed_poc'
+!!  Fsed_doc_variable='SDF_Fsed_doc'
+!/
 &aed2_organic_matter
-   !-- ORGANIC NITROGEN
-   !pon_initial = 50.0
-   !don_initial = 50.0
-   donr_initial = 0.00001
-   w_pon = -0.035 !WRR revisions test -0.025;original sub = 0.015Snortheim -0.1238, Manual: -10
-   Rpon_miner = 0.0027 !WRR 1p5xtest;original sub = 0.0018 Manual: 0.005 - 0.03, Emily: 0.035
-   Rdon_miner = 0.0085 !WRR recal = -.007; original sub = 0.006Manual: 0.003 - 0.05
-   Fsed_pon = -0.02 !github says = 0 (and doesn’t have divided by secs in day)
-   Fsed_don = 0.01 !Manual: 0.07 - 0.57
-   Kpon_miner = 78 !Manual: 47 - 78 (lakes)
-   Kdon_miner = 78 !Manual: 47 - 78 (lakes)
-   Ksed_don = 100 !Snortheim 4.5, Manual: 100
-   theta_pon_miner = 1.07
-   theta_don_miner = 1.07
-   theta_sed_don = 1.07
-   don_miner_product_variable='NIT_amm'
-   donr_initial = 0.0
-   !-- ORGANIC PHOSPHORUS
-   !pop_initial = 1.0
-   !dop_initial = 1.0
-   dopr_initial = 0.0
-   !w_pop = -0.1238 !Manual: -1
-   w_pop = -0.055 ! WRR;recal=-0.045; original submission= -0.03 !Manual: -1
-   Rpop_miner = 0.015 !WRR; recal=0.02; original sub = 0.01; Manual: 0.01 - 0.03
-   Rdop_miner = 0.02 !WRR; real = 0.04; original sub = 0.02;Manual: 0.01 - 0.05
-   Fsed_pop = -0.001 !-1 new feb8,2017 !github says = 0 (and doesn’t have divided by secs in day)
-   Fsed_dop = 0.001 !0.01feb8,2017 was 0.001 !Manual: 0.03
-   Kpop_miner = 78 !Manual: 47 - 78 (lakes)
-   Kdop_miner = 78 !Manual: 47 - 78 (lakes)
-   Ksed_dop = 100 !Manual: 150 for estuaries?
-   theta_pop_miner = 1.07
-   theta_dop_miner = 1.07
-   theta_sed_dop = 1.07
-   dop_miner_product_variable='PHS_frp'
-   !-- ORGANIC CARBON
-   !poc_initial = 80.0
-   !doc_initial = 400.0
-   docr_initial = 0.0
-   w_poc = -0.05 !Snortheim -0.1238, Manual: -1
-   Rpoc_miner = 0.0001 !Manual: 0.01 - 0.07 (0.008)
-   Rdoc_miner = 0.0001 !Manual: 0.035 - 0.05
-   Fsed_poc = -0.01 !github says = 0 (and doesn’t have divided by secs in day)
-   Fsed_doc = .1 !??, originally set to 0
-   Kpoc_miner = 78 !Manual: 47 - 78 (lakes)
-   Kdoc_miner = 78 !Manual: 47 - 78 (lakes)
-   Ksed_doc = 15 !Manual: ??
-   theta_poc_miner = 1.07
-   theta_doc_miner = 1.07
-   theta_sed_doc = 1.07
-   KeDOM=0.00015 ! for DOC, should be about 0.003
-   KePOM=0.0025
-   doc_miner_reactant_variable='OXY_oxy'
-   doc_miner_product_variable= 'CAR_dic'
-!  Fsed_pon_variable='SDF_Fsed_pon'
-!  Fsed_don_variable='SDF_Fsed_don'
-!  Fsed_pop_variable='SDF_Fsed_pop'
-!  Fsed_dop_variable='SDF_Fsed_dop'
-!  Fsed_poc_variable='SDF_Fsed_poc'
-!  Fsed_doc_variable='SDF_Fsed_doc'
+   poc_initial = 78.5
+   doc_initial = 30
+   pon_initial = 0.1
+   don_initial = 0.1
+   pop_initial = 0.1
+   dop_initial = 1.5
+   docr_initial = 120
+   donr_initial = 13
+   dopr_initial = 0.1
+   cpom_initial = 100
+   Rdom_minerl = 0.5
+   Kpom_hydrol = 60
+   Kdom_minerl = 100
+   Rpoc_hydrol = 0.07
+   Rpon_hydrol = 0.05
+   Rpop_hydrol = 0.08
+   theta_hydrol = 1.08
+   theta_minerl = 1.08
+   simDenitrification = 1
+   dom_miner_oxy_reactant_var = 'OXY_oxy'
+   doc_miner_product_variable = ''
+   don_miner_product_variable = 'NIT_amm'
+   dop_miner_product_variable = 'PHS_frp'
+   dom_miner_nit_reactant_var = 'NIT_nit'
+   f_an = 1
+   K_nit = 10
+   simRPools = .true.
+   Rdomr_minerl = 5e-04
+   Rcpom_bdown = 0.001
+   X_cpom_n = 0.005
+   X_cpom_p = 0.001
+   KeDOM = 5e-05
+   KePOM = 0.001
+   KeDOMR = 0.05
+   KeCPOM = 0.00096
+   simphotolysis = .false.
+   photo_c = 0.75
+   settling = 3
+   w_pom = -0.5
+   d_pom = 1e-05
+   rho_pom = 1200
+   w_cpom = -0.01
+   d_cpom = 1e-05
+   rho_cpom = 1400
+   resuspension = 0
+   resus_link = 'NCS_resus'
+   sedimentOMfrac = 2e-04
+   Xsc = 0.5
+   Xsn = 0.05
+   Xsp = 0.005
+   Fsed_doc = 10
+   Fsed_don = 0
+   Fsed_dop = 0
+   Ksed_dom = 4.5
+   theta_sed_dom = 1.08
+   extra_diag = .false.
 /
+
 
 !###############################################################################
 ! aed2_phytoplankton - AED phytoplankton model
