@@ -1,9 +1,12 @@
 # combine temp and oxy observations for field data file
 
 temp <- read.csv('./data/formatted-data/field_temp_noon_obs.csv')
-oxy <- read.csv('./data/formatted-data/field_oxy_noon_obs.csv')
+temp$DateTime <- as.POSIXct(temp$DateTime)
 
-dat <- left_join(temp, oxy)
+oxy <- read.csv('./data/formatted-data/field_oxy_noon_obs.csv')
+oxy$DateTime <- as.POSIXct(oxy$DateTime)
+
+dat <- full_join(temp, oxy)
 dat <- dat %>% 
   arrange(DateTime, Depth) %>% 
   select(DateTime, Depth, Temp, DOppm)
