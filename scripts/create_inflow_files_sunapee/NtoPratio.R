@@ -40,10 +40,11 @@ assign(title,NtoP)
 NtoP_Inflows<-as.data.frame(cbind(Boot_TP,i505_TN,
                                   i790_TN, i830_TN, i788_TN,
                                   i510_TN,i540_TN,i800_TN,i835_TN,i805_TN,i670_TN,i760_TN))
+NtoP_Inflows$V1 <- as.Date(NtoP_Inflows$V1)
 
 write.csv(x = NtoP_Inflows,file = paste0("./data/individual_inflows/TN_TP_Inflow_conc_boot_", Sys.Date(), ".csv"),
           row.names = FALSE, quote = FALSE)
-i=1
+
 ### N and P fractions ## based on fractions described in prospectus draft to committee March 13 2017
 
 
@@ -146,28 +147,30 @@ require(plyr); require(lubridate)
 flowdata<-mutate(flowdata, date1 = ymd(date), year = year(date1))
 
 
-tpload505_mg<-rep(NA,length=nrow(Boot_TP))
-tpload790_mg<-rep(NA,length=nrow(Boot_TP))
-tpload805_mg<-rep(NA,length=nrow(Boot_TP))
-tpload830_mg<-rep(NA,length=nrow(Boot_TP))
-tpload788_mg<-rep(NA,length=nrow(Boot_TP))
-tnload505_mg<-rep(NA,length=nrow(Boot_TP))
-tnload790_mg<-rep(NA,length=nrow(Boot_TP))
-tnload805_mg<-rep(NA,length=nrow(Boot_TP))
-tnload830_mg<-rep(NA,length=nrow(Boot_TP))
-tnload788_mg<-rep(NA,length=nrow(Boot_TP))
-date_load<-rep(NA,length=nrow(Boot_TP))
+tpload505_mg<-rep(NA,length=nrow(NtoP_Inflows))
+tpload790_mg<-rep(NA,length=nrow(NtoP_Inflows))
+tpload805_mg<-rep(NA,length=nrow(NtoP_Inflows))
+tpload830_mg<-rep(NA,length=nrow(NtoP_Inflows))
+tpload788_mg<-rep(NA,length=nrow(NtoP_Inflows))
+tnload505_mg<-rep(NA,length=nrow(NtoP_Inflows))
+tnload790_mg<-rep(NA,length=nrow(NtoP_Inflows))
+tnload805_mg<-rep(NA,length=nrow(NtoP_Inflows))
+tnload830_mg<-rep(NA,length=nrow(NtoP_Inflows))
+tnload788_mg<-rep(NA,length=nrow(NtoP_Inflows))
+date_load<-rep(NA,length=nrow(NtoP_Inflows))
 loads<-cbind(date_load,tpload505_mg,tpload790_mg,tpload805_mg,tpload830_mg,tpload788_mg,
              tnload505_mg,tnload790_mg,tnload805_mg,tnload830_mg,tnload788_mg)
 loads<-as.data.frame(loads)
 
+# limit to just days where inflow data are available
+NtoP_Inflows <- NtoP_Inflows[NtoP_Inflows$V1 %in% flowdata$date,]
 
 for (i in 1:5){
-  for (j in 1:nrow(Boot_TP)){
+  for (j in 1:nrow(NtoP_Inflows)){
     Tpcon_in<-NtoP_Inflows[j,(2+i)] #mmol per m3
     Tncon_in<-NtoP_Inflows[j,(8+i)] #mmol per m3
-    date_in<-as.character(NtoP_Inflows[j,2])
-    flow_index<-flowdata[which(flowdata$stream_no==inflows[i]),]
+    date_in<-as.character(NtoP_Inflows[j,1]) #previously: as.character(NtoP_Inflows[j,2])
+    flow_index<-flowdata[which(flowdata$stream_id==inflows[i]),]
     vol_in<-flow_index[which(flow_index$date==date_in),2] ##ML/day
     vol_in<-vol_in*1000 #m3 per day
     Tpcon_in<-Tpcon_in/30 #mg per m3
@@ -197,11 +200,11 @@ loads1$yearly.ncumsum.788_kg=unlist(tapply(loads1$tnload788_mg/1000000, loads1$y
 ###### PLOTS ####
 index<-loads1[complete.cases(loads1$yearly.pcumsum.505_g),]
 index<-as.data.frame(index)
-index$date_load<-as.character(index$date_load)
+index$date_load<-as.Date(index$date_load)
 index$date_load<-as.POSIXct(index$date_load, format="%Y-%m-%d")
 plot(index$date_load,index$yearly.pcumsum.505_g, type="l",ylab="Cumulative Annual P Load (g)", 
      main="505 Otter Pond",col="dodgerblue4",lwd=3,
-     xlab="Year", xlim=c(as.POSIXct("1988-01-01"),as.POSIXct("2014-01-01")))
+     xlab="Year")#, xlim=c(as.POSIXct("1988-01-01"),as.POSIXct("2014-01-01")))
 
 index<-loads1[complete.cases(loads1$yearly.ncumsum.505_kg),]
 index<-as.data.frame(index)
@@ -266,7 +269,7 @@ index$date_load<-as.character(index$date_load)
 index$date_load<-as.POSIXct(index$date_load, format="%Y-%m-%d")
 plot(index$date_load,index$yearly.pcumsum.788_g, type="l",ylab="Cumulative Annual P Load (g)", 
      main="788 Blodgett S",col="dodgerblue4",lwd=3,
-     xlab="Year", xlim=c(as.POSIXct("1988-01-01"),as.POSIXct("2014-01-01")))
+     xlab="Year")#, xlim=c(as.POSIXct("1988-01-01"),as.POSIXct("2014-01-01")))
 
 index<-loads1[complete.cases(loads1$yearly.ncumsum.788_kg),]
 index<-as.data.frame(index)
@@ -274,5 +277,5 @@ index$date_load<-as.character(index$date_load)
 index$date_load<-as.POSIXct(index$date_load, format="%Y-%m-%d")
 plot(index$date_load,index$yearly.ncumsum.788_kg, type="l",ylab="Cumulative Annual N Load (kg)", 
      main="788 Blodgett S",col="darkred",lwd=3,
-     xlab="Year", xlim=c(as.POSIXct("1988-01-01"),as.POSIXct("2014-01-01")))
+     xlab="Year")#, xlim=c(as.POSIXct("1988-01-01"),as.POSIXct("2014-01-01")))
 
