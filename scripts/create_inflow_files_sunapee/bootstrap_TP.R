@@ -11,6 +11,11 @@ alldata$date<-as.character(alldata$date)
 alldata$date<-as.POSIXct(alldata$date, format="%Y-%m-%d")
 alldata$year<-as.POSIXct(alldata$date, format="%Y")
 
+plot(alldata$date, alldata$TP_mmolm3)
+plot(alldata$date, alldata$TN_mmolm3)
+plot(alldata$date, alldata$DOC_mmolm3)
+
+
 require(plyr); require(lubridate)
 alldata<-mutate(alldata, date1 = ymd(date), year = year(date1))
 
