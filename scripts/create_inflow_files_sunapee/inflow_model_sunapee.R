@@ -38,7 +38,6 @@ final_theme=theme_bw() +
 
 #load workspace. CNH-GLM_sunapee_inflowoutflow_begwrkspc has all the original data frames resulting from the 'read.csv' and 'read.xls' functions
 #change this to the appropriate working directory
-setwd("C:/Users/wwoel/Desktop/Sunapee-GLM")
 load("./scripts/create_inflow_files_sunapee/CNH-GLM_sunapee_inflowoutflow_begwrkspc.RData")
 
 #### bring in NLDAS-2 climate data ####
@@ -1074,7 +1073,7 @@ ggplot(met_trans, aes(x=AirTemp.mean, y=temp_C.mean)) +
   labs(title='Air Temperature and Stream Temperature', 
        x='mean daily NLDAS-2 air temperature (deg C)',
        y='mean daily stream temperature (deg C)') #+
-  final_theme
+  #final_theme
 
 
 # we need to model stream temperature based on air temp and transducer in-stream temperature.
@@ -1109,7 +1108,7 @@ All Transducers',
        y='mean daily stream temperature (deg C)') +
   geom_hline(yintercept = cold_temp_all, color='#E69F00', size=1.1) +
   geom_abline(slope = coef_all[2], intercept = coef_all[1], color='#56B4E9', size=1.1) #+
-  final_theme
+  #final_theme
 
 label.all_sum <- function(met_trans_sub){
   m <- lm_all_s;
@@ -1157,7 +1156,7 @@ mettrans_505 <- ggplot(met_trans_505, aes(x=AirTemp.mean, y=temp_C.mean)) +
        y='mean daily stream temperature (deg C)') +
   geom_hline(yintercept = cold_temp_505, color='#E69F00', size=1.1) +
   geom_abline(slope = coef_505s[2], intercept = coef_505s[1], color='#56B4E9', size=1.1) #+
-  final_theme
+  #final_theme
 
 label.505_sum <- function(met_trans_505_sub){
   m <- lm_505s;
@@ -1205,8 +1204,7 @@ mettrans_665 <- ggplot(met_trans_665, aes(x=AirTemp.mean, y=temp_C.mean)) +
        x='mean daily air temperature (deg C)',
        y='mean daily stream temperature (deg C)') +
   geom_hline(yintercept = cold_temp_665, color='#E69F00', size=1.1) +
-  geom_abline(slope = coef_665s[2], intercept = coef_665s[1], color='#56B4E9', size=1.1) +
-  final_theme
+  geom_abline(slope = coef_665s[2], intercept = coef_665s[1], color='#56B4E9', size=1.1) 
 
 label.665_sum <- function(met_trans_665_sub){
   m <- lm_665s;
@@ -1246,16 +1244,15 @@ cold_temp_788_SD <- sd(met_trans_788_cold$temp_C.mean)
 #do we match?
 (cold_temp_788-coef_788s[1])/coef_788s[2]
 
-mettrans_788 <- ggplot(met_trans_788, aes(x=AirTemp.mean, y=temp_C.mean)) +
-  geom_vline(xintercept = t_788_cutoff, color='grey', size=1.1) +
-  geom_point(size=1) +
-  labs(title='Air Temperature and Stream Temperature
-788 Blodgetts South', 
-       x='mean daily NLDAS-2 air temperature (deg C)',
-       y='mean daily stream temperature (deg C)') +
-  geom_hline(yintercept = cold_temp_788, color='#E69F00', size=1.1) +
-  geom_abline(slope = coef_788s[2], intercept = coef_788s[1], color='#56B4E9', size=1.1) +
-  final_theme
+#mettrans_788 <- ggplot(met_trans_788, aes(x=AirTemp.mean, y=temp_C.mean)) +
+#  geom_vline(xintercept = t_788_cutoff, color='grey', size=1.1) +
+#  geom_point(size=1) +
+#  labs(title='Air Temperature and Stream Temperature
+#788 Blodgetts South', 
+#       x='mean daily NLDAS-2 air temperature (deg C)',
+#       y='mean daily stream temperature (deg C)') +
+#  geom_hline(yintercept = cold_temp_788, color='#E69F00', size=1.1) +
+#  geom_abline(slope = coef_788s[2], intercept = coef_788s[1], color='#56B4E9', size=1.1)
 
 label.788_sum <- function(met_trans_788_sub){
   m <- lm_788s;
@@ -1273,11 +1270,11 @@ label.788_mean <- function(met_trans_788_cold){
   as.character(as.expression(eq));                 
 }
 
-mettrans_788 + 
-  geom_text(x = -20, y = 17.5, label='mean of temperatures <= -2.137', hjust=0, color='#E69F00') +
-  geom_text(x = -20, y = 16.5, label = label.788_mean(met_trans_788_cold), parse = TRUE, hjust=0, color='#E69F00') +
-  geom_text(x = -20, y = 15.5, label='linear model of temperatures > -2.137', hjust=0, color='#56B4E9') +
-  geom_text(x = -20, y = 14.5, label = label.788_sum(met_trans_788_sub), parse = TRUE, hjust=0, color='#56B4E9')
+#mettrans_788 + 
+#  geom_text(x = -20, y = 17.5, label='mean of temperatures <= -2.137', hjust=0, color='#E69F00') +
+#  geom_text(x = -20, y = 16.5, label = label.788_mean(met_trans_788_cold), parse = TRUE, hjust=0, color='#E69F00') +
+#  geom_text(x = -20, y = 15.5, label='linear model of temperatures > -2.137', hjust=0, color='#56B4E9') +
+#  geom_text(x = -20, y = 14.5, label = label.788_sum(met_trans_788_sub), parse = TRUE, hjust=0, color='#56B4E9')
 
 
 ## 790BN
@@ -1295,16 +1292,16 @@ cold_temp_790_SD <- sd(met_trans_790_cold$temp_C.mean)
 #do we match?
 (cold_temp_790-coef_790s[1])/coef_790s[2]
 
-mettrans_790 <- ggplot(met_trans_790, aes(x=AirTemp.mean, y=temp_C.mean)) +
-  geom_vline(xintercept = t_790_cutoff, color='grey', size=1.1) +
-  geom_point(size=1) +
-  labs(title='Air Temperature and Stream Temperature
-790 Blodgetts North', 
-       x='mean daily NLDAS-2 air temperature (deg C)',
-       y='mean daily stream temperature (deg C)') +
-  geom_hline(yintercept = cold_temp_790, color='#E69F00', size=1.1) +
-  geom_abline(slope = coef_790s[2], intercept = coef_790s[1], color='#56B4E9', size=1.1) +
-  final_theme
+#mettrans_790 <- ggplot(met_trans_790, aes(x=AirTemp.mean, y=temp_C.mean)) +
+#  geom_vline(xintercept = t_790_cutoff, color='grey', size=1.1) +
+#  geom_point(size=1) +
+#  labs(title='Air Temperature and Stream Temperature
+#790 Blodgetts North', 
+#       x='mean daily NLDAS-2 air temperature (deg C)',
+#       y='mean daily stream temperature (deg C)') +
+#  geom_hline(yintercept = cold_temp_790, color='#E69F00', size=1.1) +
+#  geom_abline(slope = coef_790s[2], intercept = coef_790s[1], color='#56B4E9', size=1.1) +
+#  final_theme
 
 label.790_sum <- function(met_trans_790_sub){
   m <- lm_790s;
@@ -1322,11 +1319,11 @@ label.790_mean <- function(met_trans_790_cold){
   as.character(as.expression(eq));                 
 }
 
-mettrans_790 + 
-  geom_text(x = -20, y = 22.5, label='mean of temperatures <= -1.512', hjust=0, color='#E69F00') +
-  geom_text(x = -20, y = 21.5, label = label.790_mean(met_trans_790_cold), parse = TRUE, hjust=0, color='#E69F00') +
-  geom_text(x = -20, y = 20.5, label='linear model of temperatures > -1.512', hjust=0, color='#56B4E9') +
-  geom_text(x = -20, y = 19.5, label = label.790_sum(met_trans_790_sub), parse = TRUE, hjust=0, color='#56B4E9')
+#mettrans_790 + 
+#  geom_text(x = -20, y = 22.5, label='mean of temperatures <= -1.512', hjust=0, color='#E69F00') +
+#  geom_text(x = -20, y = 21.5, label = label.790_mean(met_trans_790_cold), parse = TRUE, hjust=0, color='#E69F00') +
+#  geom_text(x = -20, y = 20.5, label='linear model of temperatures > -1.512', hjust=0, color='#56B4E9') +
+#  geom_text(x = -20, y = 19.5, label = label.790_sum(met_trans_790_sub), parse = TRUE, hjust=0, color='#56B4E9')
 
 
 ## 805 King Hill
@@ -1371,11 +1368,11 @@ label.805_mean <- function(met_trans_805_cold){
   as.character(as.expression(eq));                 
 }
 
-mettrans_805 + 
-  geom_text(x = -20, y = 21.5, label='mean of temperatures <= -0.531', hjust=0, color='#E69F00') +
-  geom_text(x = -20, y = 20.5, label = label.805_mean(met_trans_805_cold), parse = TRUE, hjust=0, color='#E69F00') +
-  geom_text(x = -20, y = 19.5, label='linear model of temperatures > -0.531', hjust=0, color='#56B4E9') +
-  geom_text(x = -20, y = 18.5, label = label.805_sum(met_trans_805_sub), parse = TRUE, hjust=0, color='#56B4E9')
+#mettrans_805 + 
+#  geom_text(x = -20, y = 21.5, label='mean of temperatures <= -0.531', hjust=0, color='#E69F00') +
+#  geom_text(x = -20, y = 20.5, label = label.805_mean(met_trans_805_cold), parse = TRUE, hjust=0, color='#E69F00') +
+#  geom_text(x = -20, y = 19.5, label='linear model of temperatures > -0.531', hjust=0, color='#56B4E9') +
+#  geom_text(x = -20, y = 18.5, label = label.805_sum(met_trans_805_sub), parse = TRUE, hjust=0, color='#56B4E9')
 
 ## 830 Herrick South
 t_830_cutoff <- -1.310
@@ -1419,19 +1416,21 @@ label.830_mean <- function(met_trans_830_cold){
   as.character(as.expression(eq));                 
 }
 
-mettrans_830 + 
-  geom_text(x = -20, y = 23.5, label='mean of temperatures <= -1.310', hjust=0, color='#E69F00') +
-  geom_text(x = -20, y = 22.5, label = label.830_mean(met_trans_830_cold), parse = TRUE, hjust=0, color='#E69F00') +
-  geom_text(x = -20, y = 21.5, label='linear model of temperatures > -1.310', hjust=0, color='#56B4E9') +
-  geom_text(x = -20, y = 20.5, label = label.830_sum(met_trans_830_sub), parse = TRUE, hjust=0, color='#56B4E9')
+#mettrans_830 + 
+#  geom_text(x = -20, y = 23.5, label='mean of temperatures <= -1.310', hjust=0, color='#E69F00') +
+#  geom_text(x = -20, y = 22.5, label = label.830_mean(met_trans_830_cold), parse = TRUE, hjust=0, color='#E69F00') +
+#  geom_text(x = -20, y = 21.5, label='linear model of temperatures > -1.310', hjust=0, color='#56B4E9') +
+#  geom_text(x = -20, y = 20.5, label = label.830_sum(met_trans_830_sub), parse = TRUE, hjust=0, color='#56B4E9')
 
 
 #### add stream temp to runoff data ####
 #merge file with predicted runoff with observed air temp data
 
+MetData$date <- as.Date(MetData$time)
 temp_daily_new <- summaryBy(AirTemp ~ date, 
                         data=MetData,
                         FUN=mean)
+
 run505_temp <- merge(MetData_505_daily_sub, temp_daily_new, by='date', all.x=T)
 run510_temp <- merge(MetData_510_daily_sub, temp_daily_new, by='date', all.x=T)
 run540_temp <- merge(MetData_540_daily_sub, temp_daily_new, by='date', all.x=T)
